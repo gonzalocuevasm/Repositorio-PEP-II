@@ -1,1 +1,4 @@
-Repositorio-PEP-1-IME
+Repositorio-PEP-II-IME
+Integrantes:
+Sofia Castro
+Gonzalo Cuevas
