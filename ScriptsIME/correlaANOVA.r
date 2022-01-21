@@ -16,7 +16,7 @@ datos [["algoritmo"]] <- factor ( datos [["algoritmo"]])
 
 # Comprobción de normalidad .
 g <- ggqqplot ( datos , x = "tiempo", y = "algoritmo", color = "algoritmo")
-g <- g + facet _ wrap (~ algoritmo )
+g <- g + facet_wrap (~ algoritmo )
 g <- g + rremove ("x.ticks") + rremove ("x.text")
 g <- g + rremove ("y.ticks") + rremove ("y.text")
 g <- g + rremove ("axis.title")
