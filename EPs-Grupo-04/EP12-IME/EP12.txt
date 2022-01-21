@@ -1,0 +1,248 @@
+#-------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
+#                     Enunciado 12, desarrollo de sala 4
+#
+#            Integrantes:                        RUT:              
+#        - Carlos Castillo                   20.201.274-4
+#        - Gonzalo Cuevas                    19.721.859-2
+#        - Daniel Jara
+#-------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
+# Librerías a utilizar
+library(tidyr)
+library (dplyr)
+library (readr)
+library ( ggpubr )
+library ( car )
+
+#-------------------------------------------------------------------------------
+#                                 Pregunta 
+#-------------------------------------------------------------------------------
+# Un estudio recolectó medidas anatómicas de 247 hombres y 260 mujeres
+# (Heinz et al., 2003). Estas mediciones están disponibles en el archivo
+# Body-EP12.csv que acompaña a este enunciado. El estudio incluyó nueve 
+# mediciones del esqueleto (ocho diámetros y una profundidad de hueso a
+# hueso) y doce mediciones de grosor(circunferencias) que incluyen el tejido
+
+datos <- read.csv(file.choose(), head = TRUE, sep=";", encoding = "UTF-8")
+
+#-------------------------------------------------------------------------------
+# Respuesta:  
+cat("\n----------------------------------------------------------------------")
+cat("\n                            DESARROLLO") 
+cat("\n----------------------------------------------------------------------\n")
+# Semilla a utilizar
+
+set.seed(201)
+muestra <- filter(datos, Gender == "1") %>% sample_n(., 50) 
+
+#Variables al azar
+# Chest.depth, Hip.Girth, Navel.Girth, Shoulder.Girth,
+# Chest.Girth, Bicep.Girth, Chest.diameter, Thigh.Girth
+
+#Variables posibles como predictores 
+# Waist.Girth : grosor a la altura de la cintura
+# Se selecciona este predictor pues se considera que el grosor de la cintura
+# puede ser la variable mas representativa de las restantes, pues esta medida
+# es comunmente utilizada para determinar el porcentaje de grasa en las personas
+# ademas de utilizarse como un indicador para la dimension corporal
+# de las mismas.
+# Si adicionalmente probamos con la funcion add1(), esta también nos indica que 
+# el mejor candidato como predictor, de los restantes es Waist.Girth
+nulo <- lm( Weight ~ 1 , data = muestra )
+completo <- lm( Weight ~ . , data = muestra )
+print ( add1 ( nulo , scope = completo ) )
+
+
+modelo1 <- lm( Weight~Waist.Girth , data = muestra )
+print ( summary ( modelo ) )
+
+#Comparación muestra y modelo.
+p <- ggscatter (muestra ,
+                x = "Waist.Girth",
+                y = "Weight",
+                color = "blue", 
+                fill = "blue",
+                xlab = " Grosor Cintura [cm] ",
+                ylab = " Peso [Kg]")
+p <- p + geom_smooth( method = lm , se = FALSE , color = "orange")
+
+
+
+#Pruebas de modelos 
+
+# Predictores: Waist.Girth + Hip.Girth
+modelo2 <- lm( Weight~ Waist.Girth + Hip.Girth , data = muestra )
+
+AIC1 <- AIC ( modelo1)
+AIC2 <- AIC ( modelo2)
+comparacion <- anova ( modelo1 , modelo2)
+print(comparacion)
+
+# Se tiene que el AIC del modelo 2 es menor que el del modelo 1. al evaluar las 
+# diferencias significatvas con ANOVA, se obtiene un p = 4.704e-06, inferior a 
+# 0.05, por lo que se concluye con un 95% de confianza, que el modelo2 es mejor 
+# que el modelo1.
+
+# Predictores: Waist.Girth + Hip.Girth + Shoulder.Girth
+modelo3 <- update( modelo2 , . ~ . + Shoulder.Girth )
+AIC3 <- AIC ( modelo3)
+comparacion <- anova ( modelo2 , modelo3)
+print(comparacion)
+
+# Similar al caso anterior, AIC del modelo 3 es menor que el del modelo 2, con 
+# ANOVA, p = 1.014e-07, por ende, se tiene un 95% de confianza en que el modelo 
+# 3 es mejor que el modelo 2
+
+# Predictores: Waist.Girth + Hip.Girth + Shoulder.Girth + Navel.Girth
+modelo4 <- update( modelo3 , . ~ . + Navel.Girth )
+AIC4 <- AIC ( modelo4)
+comparacion <- anova ( modelo3 , modelo4)
+print(comparacion)
+
+# AIC del modelo 4 es ligeramente menor que el del modelo 3, al utilizar
+# ANOVA, nos entrega un p = 0.04908, por lo que se tiene un 95% de confianza
+# en que efectivamente, el modelo 4 es mejor que el 3.
+
+
+#Verificación de Condiciones para el modelo Final:
+
+# Redución del los datos, contemplando solo los predictores
+predictores <- names ( coef ( modelo4 ) ) [ -1]
+datosAux <-muestra[, c( predictores , "Weight")]
+
+# Generacion de data.Frame con los estadisticos para comprobar
+# la influencia de cada observacion
+observaciones <- data.frame ( respuesta_predicha = fitted ( modelo4 ) )
+observaciones [[" residuos_estandarizados "]] <- rstandard ( modelo4 )
+observaciones [[" residuos_estudiantizados "]] <- rstudent ( modelo4 )
+observaciones [[" distancia_Cook "]] <- cooks.distance ( modelo4 )
+observaciones [[" dfbeta "]] <- dfbeta ( modelo4 )
+observaciones [[" dffit "]] <- dffits ( modelo4 )
+observaciones [[" apalancamiento "]] <- hatvalues ( modelo4 )
+observaciones [[" covratio "]] <- covratio ( modelo4 )
+
+cat (" Identificación de valores atípicos :\n")
+# Observaciones con residuos estandarizados fuera del 95 % esperado .
+atipicos <- which ( abs(observaciones [[" residuos_estandarizados "]]) > 1.96)
+
+cat ("- Residuos estandarizados fuera del 95 % esperado :",atipicos , "\n")
+
+# Observaciones con distancia de Cook mayor a uno.
+distanciaCook <- which ( observaciones [[" distancia_Cook "]] > 1)
+cat ("- Residuos con una distancia de Cook alta :",distanciaCook , "\n")
+
+# Observaciones con apalancamiento mayor igual al doble del
+# apalancamiento promedio .
+apal_medio <- ( ncol ( datos ) + 1) / nrow ( datos )
+apalancamiento <- which ( observaciones [[" apalancamiento "]] > 2 * apal_medio )
+cat ("- Residuos con apalancamiento fuera de rango :",apalancamiento , "\n")
+
+
+# Observaciones con DFBeta mayor o igual a 1.
+dfBeta <- which ( apply ( observaciones [[" dfbeta "]] >= 1, 1 , any) )
+names( dfBeta ) <- NULL
+cat ("- Residuos con DFBeta >= 1:",dfBeta , "\n")
+
+# Observaciones con raz ón de covarianza fuera de rango .
+inferior <- 1 - 3 * apal_medio
+superior <- 1 + 3 * apal_medio
+covarianza <- which ( observaciones [[" covratio "]] < inferior | observaciones [[" covratio "]] > superior )
+
+cat ("- Residuos con razón de covarianza fuera de rango :",covarianza , "\n")
+
+# Resumen de valores sospechosos .
+sospechosos <- c( atipicos , distanciaCook , apalancamiento ,dfBeta , covarianza )
+sospechosos <- sort ( unique ( sospechosos ) )
+cat ("\ nResumen de valores sospechosos :\n")
+cat (" Apalancamiento promedio :", apal_medio , "\n")
+
+cat (" Intervalo razón de covarianza : [", inferior , "; ",superior , "]\n\n", sep = "")
+
+print ( round ( observaciones [ sospechosos , c(" distancia_Cook ", " apalancamiento "," covratio ") ], 3) )
+
+# La mayoría de los datos detectados como conflictivos presentan ciertas
+# condiciones que permiten no eliminarlos de la lista, pues en alguno con
+# con alto apalancamiento, su distancia de cook es baja o su nivel de
+# covarianza se encuentra dentro del rango optimo.
+
+#Verificación de las condiciones
+# Comprobar independencia de los residuos .
+cat (" Prueba de Durbin - Watson para autocorrelaciones ")
+cat (" entre errores :\n")
+print ( durbinWatsonTest ( modelo ) )
+# p > 0.05 -> las muestras no estan correlacionas, por lo que son independientes
+
+# Comprobar normalidad de los residuos .
+cat ("\ nPrueba de normalidad para los residuos :\n")
+print ( shapiro.test( modelo$residuals) )
+# p > 0.05 -> las muestras siguen una distribucion normal
+
+# Comprobar homocedasticidad de los residuos .
+cat (" Prueba de homocedasticidad para los residuos :\n")
+print ( ncvTest ( modelo ) )
+
+# p > 0.05 -> cumple con el supuesto de Homocedasticidad
+
+# Comprobar la multicolinealidad .
+vifs <- vif ( modelo )
+cat ("\ nVerificar la multicolinealidad :\n")
+cat ("- VIFs :\n")
+print ( vifs )
+cat ("- Tolerancias :\n")
+print (1 / vifs )
+cat ("- VIF medio :", mean ( vifs ) , "\n")
+
+# Cumple con  el criterio, todos los VIFS son menores a 5 y ademas, las toleracias
+# son superiores a 0.2
+
+
+
+#Validacion cruzada
+n <- 50
+n_entrenamiento <- floor(0.8 * n )
+muestraCruzada <- sample.int( n = n, size = n_entrenamiento , replace = FALSE )
+entrenamiento <- muestra [ muestraCruzada , ]
+prueba <- muestra [ - muestraCruzada , ]
+
+modeloEntrenamiento <- lm( Weight~ Waist.Girth + Hip.Girth + Shoulder.Girth + Navel.Girth, data = entrenamiento )
+
+mse_entrenamiento <- mean ( modeloEntrenamiento$residuals**2)
+predicciones <- predict ( modeloEntrenamiento , prueba )
+error <- prueba[["Weight"]] - predicciones
+mse_prueba <- mean( error ** 2)
+
+print(mse_prueba)
+print(mse_entrenamiento)
+
+#El error cuadrático medio para el entrenamiento y la prueba son muy similares
+# por lo que el modelo cumple con ser generalizable.
+#Conclusión:
+# Por ultimo el modelo cumple con los requisitos para se considerado un modelo valido,
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
