@@ -1,0 +1,12 @@
+#(24 puntos) A fin de determinar si es necesario establecer programas de entrenamiento diferenciados para clones y
+#reclutas, Lord Vader quiere saber si es posible distinguir entre ambas clases de soldados con los datos actuales. Para ello,
+#ha solicitado evaluar un modelo clasificador que contemple entre 2 y 5 variables predictoras. Considere que, para ser
+#aceptable, el modelo:
+#• Debe lograr una exactitud (accuracy) de al menos 0,8 en datos de prueba
+#• No puede considerar casos con demasiada influencia (considerando la distancia de Cook)
+#• No debe presentar autocorrelación (usando la prueba de Durbin-Watson para un retardo y un nivel de significación
+#α = .01)
+#• No debe presentar multicolinealidad severa (considerando el factor de inflación de la varianza, con un VIF promedio
+#inferior a 1,03).
+#Considere la semilla 3501 para obtener una muestra de 400 datos, 80% de los cuales serán empleados para ajustar el
+#modelo y el 20% restante, para evaluarlo.

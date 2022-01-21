@@ -1,6 +1,7 @@
-library ( tidyverse )
+library ( boot )
 library ( ggpubr )
-library ( ez )
+library (ez)
+library ( tidyverse )
 
 #PREGUNTA 1
 # (23 puntos) Lord Vader desea saber si los niveles de exigencia con que los distintos oficiales evaluadores (instructor,
@@ -8,7 +9,7 @@ library ( ez )
 # diferencias significativas en el promedio de la evaluación realizada por cada uno de los oficiales. El Lord Sith ha sido muy
 # claro al solicitar un reporte de aquellos oficiales cuyas evaluaciones presenten diferencias.
 
-datos <- read.csv(file.choose(), head = TRUE, sep=";", encoding = "UTF-8")
+datos <- read.csv2(file.choose(),head=TRUE ,sep=";", stringsAsFactors = TRUE  )
 
 
 
@@ -16,20 +17,22 @@ datos <- read.csv(file.choose(), head = TRUE, sep=";", encoding = "UTF-8")
 #se considera pertinente una prueba de ANOVA para muestras correlacionadas, puesto que se piden evaluar las medias 
 #de distintas muestras sobre un individuo.
 
+#Hipótesis
+#H0: Se establece que las medias para todas las evaluaciones segun cada evaluador son iguales.
+#HA: Al menos una media  de las evaluaciones por parte de un evaluador es distinta.
+
+alfa <- 0.05
 
 
-
+set.seed(123)
 datos <- datos %>% select(eval_instructor,eval_capitan,eval_comandante,eval_general)
-muestra <- datos %>% sample_n(., 50) 
-
+instancia <- factor(1:nrow(datos))
+datos <- datos %>% sample_n(., 50) 
 # Llevar data frame a formato largo .
+datos <- data.frame(datos,instancia)
 datos <- datos %>% pivot_longer (c("eval_instructor", "eval_capitan", "eval_comandante", "eval_general") ,
-                                    names_to = "oficiales",values_to = "evaluacion")
-datos [["oficiales"]] <- factor(datos[["oficiales"]])
-datos [["instancia"]] <- factor(1: nrow ( datos ) )
-
-
-set.seed(1234)
+                                 names_to = "oficiales",values_to = "evaluacion")
+datos[["oficiales"]] <- factor(datos[["oficiales"]])
 
 
 
@@ -51,10 +54,27 @@ print ( g )
 #Se asume que los soldados imperiales (stormtroopers), fueron escogidos aleatoriamente, dada la situacio4n inicial
 #en la que se obtuvieron (secuestrados).
 #3. Se puede suponer razonablemente que la(s) poblaci n(es) de origen sigue(n) una distribuci n normal.
-
+#Mediante los graficos Q-Q se puede visualizar que las 4 muestras poseen una distribucion normal.
 #4. La matriz de varianzas-covarianzas es esf rica. Como explica Horn (2008, p. 1), esta condici n establece
 #que las varianzas entre los diferentes niveles de las medidas repetidas deben ser iguales.
 #Esta condicio4n sera verificada a continuacion junto a la prueba de ANOVA.
-cat ("\n\ nProcedimiento ANOVA usando ezANOVA \n\n")
 
-prueba2 <- ezANOVA ( data = datos , dv = tiempo , within = algoritmo ,wid = instancia , return _ aov = TRUE )
+
+cat ("\n\ Resultado de ANOVA para muestras correlacionadas \n\n")
+
+anova <- ezANOVA( datos, dv = evaluacion , within = oficiales ,
+                  wid = instancia , return_aov = TRUE )
+
+print(anova)
+#El Test de ANOVA  nos da como resultado un p menor al alfa estipulado, por lo que se rechaza la hipotesis
+#nula en favor de la hipotesis alternativa, lo cual significa que existe al menos una evaluacion dictada por un evaluador 
+#con media distinta al resto.
+
+#Dado que se rechazo la hipotesis nula, se va a implementar una prueba post-hoc, sin considerar que no se cumple 
+#la cuarta condicion. 
+# Procedimiento post-hoc de Holm .
+holm <- pairwise.t.test(datos[["evaluacion"]],datos[["oficiales"]] , p.adj = "holm", paired = TRUE )
+cat("\n\Corrección de Holm \n")
+print(holm)
+
+
