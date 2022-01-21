@@ -45,7 +45,6 @@ g <- g + rremove ("axis.title")
 print ( g )
 
 
-
 #Para aplicar la prueba ANOVA se deben verificar sus condiciones:
 #1. La escala con que se mide la variable dependiente tiene las propiedades de una escala de intervalos
 #iguales.
@@ -53,7 +52,7 @@ print ( g )
 #2. 2. Las mediciones son independientes al interior de cada grupo.
 #Se asume que los soldados imperiales (stormtroopers), fueron escogidos aleatoriamente, dada la situacio4n inicial
 #en la que se obtuvieron (secuestrados).
-#3. Se puede suponer razonablemente que la(s) poblaci n(es) de origen sigue(n) una distribuci n normal.
+#3. Se puede suponer razonablemente que la(s) poblaci n(es) de origen tiende(n) a una distribuci n normal.
 #Mediante los graficos Q-Q se puede visualizar que las 4 muestras poseen una distribucion normal.
 #4. La matriz de varianzas-covarianzas es esf rica. Como explica Horn (2008, p. 1), esta condici n establece
 #que las varianzas entre los diferentes niveles de las medidas repetidas deben ser iguales.
@@ -76,5 +75,7 @@ print(anova)
 holm <- pairwise.t.test(datos[["evaluacion"]],datos[["oficiales"]] , p.adj = "holm", paired = TRUE )
 cat("\n\Corrección de Holm \n")
 print(holm)
-
+#Los resultados de la prueba de holm nos permiten inferir que segun la evaluacion comendada por el general
+#es la que presenra mayor diferencias.
+#Finalmente, se concluye que si existe al menos una evualuacion con media distinta generada por un alto mando.
 

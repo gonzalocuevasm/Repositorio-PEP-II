@@ -1,12 +1,67 @@
 #(24 puntos) A fin de determinar si es necesario establecer programas de entrenamiento diferenciados para clones y
-#reclutas, Lord Vader quiere saber si es posible distinguir entre ambas clases de soldados con los datos actuales. Para ello,
-#ha solicitado evaluar un modelo clasificador que contemple entre 2 y 5 variables predictoras. Considere que, para ser
-#aceptable, el modelo:
+#reclutas, Lord Vader quiere saber si es posible distinguir entre ambas clases de soldados con los datos actuales.
+#Para ello,
+#ha solicitado evaluar un modelo clasificador que contemple entre 2 y 5 variables predictoras. Considere que, para
+#ser aceptable, el modelo:
+
 #• Debe lograr una exactitud (accuracy) de al menos 0,8 en datos de prueba
 #• No puede considerar casos con demasiada influencia (considerando la distancia de Cook)
 #• No debe presentar autocorrelación (usando la prueba de Durbin-Watson para un retardo y un nivel de significación
 #α = .01)
 #• No debe presentar multicolinealidad severa (considerando el factor de inflación de la varianza, con un VIF promedio
 #inferior a 1,03).
+
 #Considere la semilla 3501 para obtener una muestra de 400 datos, 80% de los cuales serán empleados para ajustar el
 #modelo y el 20% restante, para evaluarlo.
+
+
+datos <- read.csv2(file.choose(),head=TRUE ,sep=";", stringsAsFactors = TRUE  )
+
+#Variables:
+
+
+
+set.seed (3501)
+
+
+
+
+# Cargar los datos .
+
+#am <- factor ( datos$am )
+#datos $ am <- NULL
+#datos <- cbind ( am , datos )
+
+# Crear una variable indicadora para sexo , con valor 0
+# para hombres y 1 , para mujeres .
+
+datos[es_clon== "S"] <- 1
+datos[es_clon == "N"] <- 0
+
+
+
+# Separar conjuntos de entrenamiento y prueba .
+n <- nrow ( datos )
+n_entrenamiento <- floor (0.8 * n )
+muestra <- sample.int ( n = n , size = n_entrenamiento , replace = FALSE )
+entrenamiento <- datos [ muestra , ]
+prueba <- datos [ - muestra , ]
+
+# Ajustar modelo nulo .
+nulo <- glm( am ~ 1 , family = binomial ( link = "logit") , data = entrenamiento )
+
+# Ajustar modelo completo .
+cat ("\n\n")
+completo <- glm( am ~ . , family = binomial ( link = "logit") ,data = entrenamiento )
+
+# Ajustar modelo con regresi ón escalonada .
+cat (" Modelo con regresi ón escalonada \n")
+cat (" - - - - - - - - - - -- - - - - - - - - - - - - - - - - - - - -- - - - - -\n")
+mejor <- step ( nulo , scope = list ( lower = nulo , upper = completo ) , direction = "both", trace = 0)
+print ( summary ( mejor ) )
+
+
+
+
+
+
