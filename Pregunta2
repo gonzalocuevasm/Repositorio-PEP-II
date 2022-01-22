@@ -16,11 +16,10 @@
 
 
 datos <- read.csv2(file.choose(),head=TRUE ,sep=";", stringsAsFactors = TRUE  )
-#Justificacion de uso de metodo:
-#Como nos solicitan incluir entre 2 a 5 variables predictorias se rechaza la opcion de utilizar una regresion lineal,
-#y la variable a evaluar corresponde a una dicotimica, se decide implementar una regresion logistica.
+#Justificación de uso de método:
+#Como nos solicitan incluir entre 2 a 5 variables predictoras se rechaza la opción de utilizar una regresión lineal,
+#y la variable a evaluar corresponde a una dicotómica, se decide implementar una regresión logística.
 #Variables:
-
 
 
 set.seed (3501)
@@ -28,22 +27,22 @@ set.seed (3501)
 
 clones <- factor (datos$es_clon)
 
-# Crear una variable indicadora para sexo , con valor 0
-# para hombres y 1 , para mujeres .
+# Crear una variable indicadora para clones llamada tipo , con valor 0
+# para los que no son clonesy 1 , para los que son clones .
 tipo <- rep(1,length(clones))
 tipo[ clones == "N"] <- 0
 
-# Reemplazar la variable sexo por lavariable indicadora .
+# Reemplazar la variable tipo por la variable indicadora .
 datos <- cbind ( datos , tipo )
-datos [["es_clon"]] <- NULL
+datos[["es_clon"]] <- NULL
 
 # Cargar los datos .
 tipo <- factor(datos$tipo)
 datos$tipo <- NULL
 datos <- cbind(tipo,datos)
 
-# Crear una variable indicadora para sexo , con valor 0
-# para hombres y 1 , para mujeres .
+# Crear una variable indicadora para tipo , con valor 0
+# para los que no son clones y 1 , para los que son clones .
 # Separar conjuntos de entrenamiento y prueba .
 n <- nrow ( datos )
 n_entrenamiento <- floor (0.8 * n )
@@ -58,16 +57,13 @@ nulo <- glm( tipo ~ 1 , family = binomial ( link = "logit") , data = entrenamien
 cat ("\n\n")
 completo <- glm( tipo ~ . , family = binomial ( link = "logit") ,data = entrenamiento )
 
-# Ajustar modelo con regresi ón escalonada .
-cat (" Modelo con regresi ón escalonada \n")
+# Ajustar modelo con regresión escalonada .
+cat (" Modelo con regresión escalonada \n")
 cat (" - - - - - - - - - - -- - - - - - - - - - - - - - - - - - - - -- - - - - -\n")
 mejor <- step ( nulo , scope = list ( lower = nulo , upper = completo ) , direction = "both", trace = 0)
 print ( summary ( mejor ) )
 
-
-
-
-# Ajustar modelo con el peso como predictor .
+# Ajustar modelo con la resistencia como predictor .
 modelo1 <- glm( tipo ~ resistencia , family = binomial ( link = "logit") , data = entrenamiento )
 print ( summary ( modelo1) )
 aic_1 <- AIC ( modelo1)

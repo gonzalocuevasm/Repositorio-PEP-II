@@ -83,6 +83,12 @@ print(holm)
 #es la que presenta mayor diferencias.
 #Finalmente, se concluye que si existe al menos una evaluación con media distinta generada por un alto mando.
 
+
+
+
+
+
+
 #PREGUNTA 3:
 #Ejemplo:
 #La valoración del gabinete estipulado por el nuevo mandato y el gobierno anterior por parte de la población,
