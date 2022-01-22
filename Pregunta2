@@ -16,7 +16,9 @@
 
 
 datos <- read.csv2(file.choose(),head=TRUE ,sep=";", stringsAsFactors = TRUE  )
-
+#Justificacion de uso de metodo:
+#Como nos solicitan incluir entre 2 a 5 variables predictorias se rechaza la opcion de utilizar una regresion lineal,
+#y la variable a evaluar corresponde a una dicotimica, se decide implementar una regresion logistica.
 #Variables:
 
 
@@ -24,22 +26,28 @@ datos <- read.csv2(file.choose(),head=TRUE ,sep=";", stringsAsFactors = TRUE  )
 set.seed (3501)
 
 
+clones <- factor (datos$es_clon)
+
+
+# Crear una variable indicadora para sexo , con valor 0
+# para hombres y 1 , para mujeres .
+tipo <- rep(1,length(clones))
+tipo[ clones == "N"] <- 0
+
+# Reemplazar la variable sexo por lavariable indicadora .
+datos <- cbind ( datos , tipo )
+datos [["es_clon"]] <- NULL
+
 
 
 # Cargar los datos .
 
-#am <- factor ( datos$am )
-#datos $ am <- NULL
-#datos <- cbind ( am , datos )
+tipo <- factor ( datos$tipo )
+datos$tipo <- NULL
+datos <- cbind ( tipo , datos )
 
 # Crear una variable indicadora para sexo , con valor 0
 # para hombres y 1 , para mujeres .
-
-datos[es_clon== "S"] <- 1
-datos[es_clon == "N"] <- 0
-
-
-
 # Separar conjuntos de entrenamiento y prueba .
 n <- nrow ( datos )
 n_entrenamiento <- floor (0.8 * n )
@@ -48,11 +56,11 @@ entrenamiento <- datos [ muestra , ]
 prueba <- datos [ - muestra , ]
 
 # Ajustar modelo nulo .
-nulo <- glm( am ~ 1 , family = binomial ( link = "logit") , data = entrenamiento )
+nulo <- glm( tipo ~ 1 , family = binomial ( link = "logit") , data = entrenamiento )
 
 # Ajustar modelo completo .
 cat ("\n\n")
-completo <- glm( am ~ . , family = binomial ( link = "logit") ,data = entrenamiento )
+completo <- glm( tipo ~ . , family = binomial ( link = "logit") ,data = entrenamiento )
 
 # Ajustar modelo con regresi ón escalonada .
 cat (" Modelo con regresi ón escalonada \n")
