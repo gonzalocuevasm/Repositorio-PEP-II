@@ -262,15 +262,26 @@ matriz_p <- confusionMatrix ( preds_p , prueba[["tipo"]])
 print(matriz_p)
 
 #Conclusión
+#La curva de ROC vista en los datos de entrenamiento y de prueba se aleja bastante
+# de la diagonal, indicando que existe una gran precisión, causando que este sea un 
+# buen modelo.
 
+#Luego de revisar los datos del modelo, este cumple con las condiciones solicitadas
+# adicionalmente, mediante la curva de ROC, se verifica que el modelo es óptimo, pues
+# su curva se aleja bastante de la diagonal.
+# Además, su matriz de confusión nos indica que existe un 96% de exactitud, superior al
+# valor solicitado. Por otro lado, ningun dato presenta una distancia de cook que lo 
+# marque como un valor preocupante, como tampoco estos presentan una multicolinealidad 
+# severa, pues son inferiores a tres veces el apalancamiento promedio.
 
 
 #PREGUNTA 3:
 #Ejemplo:
 #La valoración del gabinete estipulado por el nuevo mandato y el gobierno anterior por parte de la población,
 # donde 0 significa que no valora ningún personaje, 1 valora a una persona en el gabinete y así sucesivamente,
-#por lo que posee un rango de 0-23, siendo 23 la cantidad de ministerios, luego este se divide por la cantidad total (23),
-#obteniendo el promedio de valoración por persona para cada gabinete.
+#por lo que posee un rango de 0-23, siendo 23 la cantidad de ministerios,
+#luego este se divide por la cantidad total (23),
+#obteniendo el promedio de valoración por participante para cada gabinete.
 #H0: No hay diferencia en la valoración del gabinete escogido entre los dos gobiernos.
 #HA: Existe diferencia en la valoración del gabinete actual con el gabinete anterior.
 
