@@ -28,7 +28,6 @@ set.seed (3501)
 
 clones <- factor (datos$es_clon)
 
-
 # Crear una variable indicadora para sexo , con valor 0
 # para hombres y 1 , para mujeres .
 tipo <- rep(1,length(clones))
@@ -38,10 +37,7 @@ tipo[ clones == "N"] <- 0
 datos <- cbind ( datos , tipo )
 datos [["es_clon"]] <- NULL
 
-
-
 # Cargar los datos .
-
 tipo <- factor(datos$tipo)
 datos$tipo <- NULL
 datos <- cbind(tipo,datos)
@@ -182,14 +178,14 @@ probs_e <- predict ( modelo3 , entrenamiento , type = "response")
 
 umbral <- 0.5
 preds_e <- sapply ( probs_e , function (p) ifelse ( p >= umbral , "1", "0") )
-preds_e <- factor ( preds_e , levels = levels ( datos[["EN"]]) )
+preds_e <- factor ( preds_e , levels = levels ( datos[["tipo"]]) )
 
 # Se obtiene el modelo roc del modelo 4 con el conjunto de entrenamiento
-ROC_e <- roc ( entrenamiento[["EN"]] , probs_e )
+ROC_e <- roc ( entrenamiento[["tipo"]] , probs_e )
 plot(ROC_e)
 
 # Matriz de confusión del conjunto entrenamiento
-matriz_e <- confusionMatrix ( preds_e , entrenamiento[["EN"]])
+matriz_e <- confusionMatrix ( preds_e , entrenamiento[["tipo"]])
 print ( matriz_e )
 
 # Evaluar el modelo 4 con el conjunto de prueba .
@@ -197,12 +193,12 @@ cat (" Evaluación del modelo a partir del conjunto de prueba :\n")
 probs_p <- predict ( modelo3 , prueba , type = "response")
 
 preds_p <- sapply ( probs_p , function ( p ) ifelse ( p >= umbral , "1", "0") )
-preds_p <- factor ( preds_p , levels = levels ( datos [["EN"]]) )
+preds_p <- factor ( preds_p , levels = levels ( datos [["tipo"]]) )
 
 # Se obtiene el modelo roc del modelo 4 con el conjunto de prueba
-ROC_p <- roc ( prueba[["EN"]] , probs_p )
+ROC_p <- roc ( prueba[["tipo"]] , probs_p )
 plot ( ROC_p )
 
 # Matriz de confusión del conjunto de prueba
-matriz_p <- confusionMatrix ( preds_p , prueba[["EN"]])
+matriz_p <- confusionMatrix ( preds_p , prueba[["tipo"]])
 print ( matriz_p )
