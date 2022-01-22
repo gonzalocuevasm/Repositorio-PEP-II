@@ -79,3 +79,17 @@ print(holm)
 #es la que presenra mayor diferencias.
 #Finalmente, se concluye que si existe al menos una evualuacion con media distinta generada por un alto mando.
 
+
+#PREGUNTA 3:
+#Ejemplo:
+#Valoracion del gabinete estipulado por el nuevo mandato o diferencia de el gobierno anterior, donde 0 no valora
+#ningun personaje, 1 valora a una persona en el gabinete y asi sucesivamente, por lo que posee un rango de 0-23, 
+#siendo 23 la cantidad de ministerios.
+#H0: No hay diferencia en la valoracion del gabinete escogido entre los dos gobiernos.
+#HA: Existe diferencia en la valoracion del gabinete actual con el gabinete anterior.
+#variables
+#   Participante | Gabinete Anterior | Gabinete Actual
+#       1                 2                13
+#       .                 .                .
+#       .                 .                .
+#       n                 i                j
